@@ -10,6 +10,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"time"
 )
 
 type PersonServer struct {
@@ -47,8 +48,17 @@ func (*PersonServer) SearchIn(server grpc.ClientStreamingServer[person.PersonReq
 	//return status.Errorf(codes.Unimplemented, "method SearchIn not implemented")
 	return nil
 }
-func (*PersonServer) SearchOut(*person.PersonReq, grpc.ServerStreamingServer[person.PersonResp]) error {
-	return status.Errorf(codes.Unimplemented, "method SearchOut not implemented")
+func (*PersonServer) SearchOut(req *person.PersonReq, server grpc.ServerStreamingServer[person.PersonResp]) error {
+	name := req.Name
+	for idx := 0; idx < 10; idx++ {
+		err := server.Send(&person.PersonResp{Name: name, Age: int32(idx)})
+		if err != nil {
+			return err
+		}
+		time.Sleep(1 * time.Second)
+	}
+	return nil
+	//return status.Errorf(codes.Unimplemented, "method SearchOut not implemented")
 }
 func (*PersonServer) SearchIO(grpc.BidiStreamingServer[person.PersonReq, person.PersonResp]) error {
 	return status.Errorf(codes.Unimplemented, "method SearchIO not implemented")
