@@ -28,5 +28,11 @@ message Person{
         OTHER = 2;
     }
 
+    oneof TestOneOf {
+        string one = 7;
+        string two = 8;
+        string three = 9;
+    }
+
     GENDER gender = 6;
 }
