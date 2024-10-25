@@ -6,6 +6,7 @@ import (
 	"github.com/ShowyQuasar88/rpc_demo/go_grpc/pb/person"
 	"google.golang.org/grpc"
 	"io"
+	"sync"
 	"time"
 )
 
@@ -70,6 +71,46 @@ func searchOut() {
 	}
 }
 
+// searchIO 调用服务端 Search 流式请求返回方法
+func searchIO() {
+	conn, err := grpc.NewClient("localhost:8888", grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+	client := person.NewSearchServiceClient(conn)
+	stream, err := client.SearchIO(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		for idx := 0; idx < 10; idx++ {
+			err := stream.Send(&person.PersonReq{Name: "ShowyQuasar88"})
+			if err != nil {
+				break
+			}
+			time.Sleep(1 * time.Second)
+		}
+		err := stream.CloseSend()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		for {
+			req, err := stream.Recv()
+			if err != nil {
+				break
+			}
+			fmt.Println(req)
+		}
+	}()
+	wg.Wait()
+}
+
 func main() {
 	// 客户端三步走
 	// 1. 创建和服务器的连接
@@ -77,5 +118,6 @@ func main() {
 	// 3. 调用服务中的方法，获取返回
 	//originSearch()
 	//searchIn()
-	searchOut()
+	//searchOut()
+	searchIO()
 }

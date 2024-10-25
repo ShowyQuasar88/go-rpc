@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"github.com/ShowyQuasar88/rpc_demo/go_grpc/pb/person"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"io"
 	"log"
 	"net"
+	"sync"
 	"time"
 )
 
@@ -60,8 +59,38 @@ func (*PersonServer) SearchOut(req *person.PersonReq, server grpc.ServerStreamin
 	return nil
 	//return status.Errorf(codes.Unimplemented, "method SearchOut not implemented")
 }
-func (*PersonServer) SearchIO(grpc.BidiStreamingServer[person.PersonReq, person.PersonResp]) error {
-	return status.Errorf(codes.Unimplemented, "method SearchIO not implemented")
+func (*PersonServer) SearchIO(server grpc.BidiStreamingServer[person.PersonReq, person.PersonResp]) error {
+	str := make(chan string) // 来一个为空的缓冲区
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		for {
+			req, err := server.Recv()
+			if err != nil {
+				str <- "Done"
+				break
+			}
+			str <- req.GetName()
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		for {
+			receive := <-str
+			err := server.Send(&person.PersonResp{Name: "Receive: " + receive})
+			if err != nil {
+				fmt.Println(err)
+				break
+			}
+			if receive == "Done" {
+				break
+			}
+		}
+	}()
+	wg.Wait()
+	return nil
+	//return status.Errorf(codes.Unimplemented, "method SearchIO not implemented")
 }
 
 func main() {
