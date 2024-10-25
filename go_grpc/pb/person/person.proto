@@ -20,4 +20,13 @@ message Person{
     repeated string test = 4;   // repeated 声明切片
     map<string,string> test_map = 5;    // 声明 map，第一个只能是 string，第二个可以是之前定义过的类型，比如 Person
 
+    enum GENDER {   // 枚举类型必须从 0 开始标序号
+        option allow_alias = true;  // 比如 girl 和 woman 我们都想让他是 1，那么就需要设置这个
+        MAN = 0;
+        WOMAN = 1;
+        GIRL = 1;
+        OTHER = 2;
+    }
+
+    GENDER gender = 6;
 }
