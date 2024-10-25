@@ -53,8 +53,8 @@ message PersonResp {
 
 service SearchService {
     rpc Search(PersonReq) returns (PersonResp);    // 定义服务传统方式，即刻享用
-    rpc SearchIn(stream PersonReq) returns (PersonResp);    // 入参为流
-    rpc SearchOut(PersonReq) returns (stream PersonResp);    // 出参为流
-    rpc SearchIO(stream PersonReq) returns (stream PersonResp);    // 入参出餐都为流
+    rpc SearchIn(stream PersonReq) returns (PersonResp);    // 入参为流，服务端接受流并返回一个对象
+    rpc SearchOut(PersonReq) returns (stream PersonResp);    // 出参为流，服务端接收对象并返回一个流，客户端接收流
+    rpc SearchIO(stream PersonReq) returns (stream PersonResp);    // 入参出餐都为流，服务端客户端都发送并接收流
 }
 
