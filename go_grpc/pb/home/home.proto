@@ -1,0 +1,10 @@
+syntax = "proto3";  // 用 proto3 来解读
+
+package home; // 给 proto 分包的 package，和 go 中的 package 不同，整个 proto 中的文件可以用 person. 来使用
+
+// option go_package = "包名;别名" 定义完成后 import 此包的路径会像是 import 别名 报名
+option go_package = "github.com/ShowyQuasar88/rpc_demo/go_grpc/pb/home;home";
+
+message Home {
+    string home_num = 1;
+}

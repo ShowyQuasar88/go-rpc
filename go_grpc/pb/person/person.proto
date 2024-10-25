@@ -3,7 +3,9 @@ syntax = "proto3";  // 用 proto3 来解读
 package person; // 给 proto 分包的 package，和 go 中的 package 不同，整个 proto 中的文件可以用 person. 来使用
 
 // option go_package = "包名;别名" 定义完成后 import 此包的路径会像是 import 别名 报名
-option go_package = "github.com/ShowyQuasar88/pb/person;person";
+option go_package = "github.com/ShowyQuasar88/rpc_demo/go_grpc/pb/person;person";
+
+import "home/home.proto";   // 引入其他包下的结构体，根路径为执行 protoc 命令所在的路径
 
 message House {
     repeated Person persons = 1;
@@ -35,4 +37,6 @@ message Person{
     }
 
     GENDER gender = 6;
+
+    home.Home i_home = 10;
 }
