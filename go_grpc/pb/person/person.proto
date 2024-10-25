@@ -1,0 +1,23 @@
+syntax = "proto3";  // 用 proto3 来解读
+
+package person; // 给 proto 分包的 package，和 go 中的 package 不同，整个 proto 中的文件可以用 person. 来使用
+
+// option go_package = "包名;别名" 定义完成后 import 此包的路径会像是 import 别名 报名
+option go_package = "github.com/ShowyQuasar88/pb/person;person";
+
+message House {
+    repeated Person persons = 1;
+    message V { // 内部也可以嵌套 message
+        string name = 1;
+    }
+    V v = 2;    // 声明了需要使用才会产生，否则是不会生成的
+}
+
+message Person{
+    string name = 1;
+    int32 age = 2;
+    bool sex = 3;
+    repeated string test = 4;   // repeated 声明切片
+    map<string,string> test_map = 5;    // 声明 map，第一个只能是 string，第二个可以是之前定义过的类型，比如 Person
+
+}

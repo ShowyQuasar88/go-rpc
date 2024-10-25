@@ -1,4 +1,4 @@
-module rpc_demo
+module github.com/ShowyQuasar88/rpc_demo
 
 go 1.23.0
 
