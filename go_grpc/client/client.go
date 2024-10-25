@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"github.com/ShowyQuasar88/rpc_demo/go_grpc/pb/person"
 	"google.golang.org/grpc"
+	"time"
 )
 
-func main() {
-	// 客户端三步走
-	// 1. 创建和服务器的连接
-	// 2. 获取想要的服务
-	// 3. 调用服务中的方法，获取返回
+// originSearch 调用服务端原始 Search 方法
+func originSearch() {
 	conn, err := grpc.NewClient("localhost:8888", grpc.WithInsecure())
 	if err != nil {
 		panic(err)
@@ -22,4 +20,38 @@ func main() {
 		panic(err)
 	}
 	fmt.Println(resp)
+}
+
+// searchIn 调用服务端 Search 流式传入方法
+func searchIn() {
+	conn, err := grpc.NewClient("localhost:8888", grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+	client := person.NewSearchServiceClient(conn)
+	stream, err := client.SearchIn(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	for idx := 0; idx < 10; idx++ {
+		err := stream.Send(&person.PersonReq{Name: "ShowyQuasar88", Age: int32(idx)})
+		if err != nil {
+			panic(err)
+		}
+		time.Sleep(1 * time.Second)
+	}
+	resp, err := stream.CloseAndRecv()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(resp)
+}
+
+func main() {
+	// 客户端三步走
+	// 1. 创建和服务器的连接
+	// 2. 获取想要的服务
+	// 3. 调用服务中的方法，获取返回
+	//originSearch()
+	searchIn()
 }

@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/ShowyQuasar88/rpc_demo/go_grpc/pb/person"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"io"
 	"log"
 	"net"
 )
@@ -24,8 +26,26 @@ func (*PersonServer) Search(ctx context.Context, req *person.PersonReq) (*person
 	//return resp, status.Errorf(codes.Unimplemented, "method Search not implemented")
 	return resp, nil
 }
-func (*PersonServer) SearchIn(grpc.ClientStreamingServer[person.PersonReq, person.PersonResp]) error {
-	return status.Errorf(codes.Unimplemented, "method SearchIn not implemented")
+func (*PersonServer) SearchIn(server grpc.ClientStreamingServer[person.PersonReq, person.PersonResp]) error {
+	for {
+		req, err := server.Recv()
+		fmt.Println(req)
+		if err == io.EOF {
+			err := server.SendAndClose(&person.PersonResp{Name: "Done"})
+			if err != nil {
+				return err
+			}
+			break
+		} else if err != nil {
+			err := server.SendAndClose(&person.PersonResp{Name: fmt.Sprintf("err: %v", err)})
+			if err != nil {
+				return err
+			}
+			break
+		}
+	}
+	//return status.Errorf(codes.Unimplemented, "method SearchIn not implemented")
+	return nil
 }
 func (*PersonServer) SearchOut(*person.PersonReq, grpc.ServerStreamingServer[person.PersonResp]) error {
 	return status.Errorf(codes.Unimplemented, "method SearchOut not implemented")
