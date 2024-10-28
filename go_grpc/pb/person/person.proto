@@ -6,6 +6,7 @@ package person; // 给 proto 分包的 package，和 go 中的 package 不同，
 option go_package = "github.com/ShowyQuasar88/rpc_demo/go_grpc/pb/person;person";
 
 //import "home/home.proto";   // 引入其他包下的结构体，根路径为执行 protoc 命令所在的路径
+import "google/api/annotations.proto";
 
 //message House {
 //    repeated Person persons = 1;
@@ -51,10 +52,19 @@ message PersonResp {
     int32 age = 2;
 }
 
-service SearchService {
-    rpc Search(PersonReq) returns (PersonResp);    // 定义服务传统方式，即刻享用
-    rpc SearchIn(stream PersonReq) returns (PersonResp);    // 入参为流，服务端接受流并返回一个对象
-    rpc SearchOut(PersonReq) returns (stream PersonResp);    // 出参为流，服务端接收对象并返回一个流，客户端接收流
-    rpc SearchIO(stream PersonReq) returns (stream PersonResp);    // 入参出餐都为流，服务端客户端都发送并接收流
-}
+//service SearchService {
+//    rpc Search(PersonReq) returns (PersonResp);    // 定义服务传统方式，即刻享用
+//    rpc SearchIn(stream PersonReq) returns (PersonResp);    // 入参为流，服务端接受流并返回一个对象
+//    rpc SearchOut(PersonReq) returns (stream PersonResp);    // 出参为流，服务端接收对象并返回一个流，客户端接收流
+//    rpc SearchIO(stream PersonReq) returns (stream PersonResp);    // 入参出餐都为流，服务端客户端都发送并接收流
+//}
 
+service SearchService {
+    rpc Search(PersonReq) returns (PersonResp) {
+        option(google.api.http)={
+            post: "/api/person",
+            body: "*"
+        };
+    };
+
+}

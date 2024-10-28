@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/ShowyQuasar88/rpc_demo/go_grpc/pb/person"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"io"
 	"log"
 	"net"
+	"net/http"
 	"sync"
 	"time"
 )
@@ -93,7 +96,34 @@ func (*PersonServer) SearchIO(server grpc.BidiStreamingServer[person.PersonReq, 
 	//return status.Errorf(codes.Unimplemented, "method SearchIO not implemented")
 }
 
-func main() {
+func registerGateWay(wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	mux := runtime.NewServeMux()
+
+	gwServer := &http.Server{
+		Handler: mux,
+		Addr:    ":8090",
+	}
+
+	conn, err := grpc.NewClient("127.0.0.1:8888", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		panic(err)
+	}
+
+	err = person.RegisterSearchServiceHandler(context.Background(), mux, conn)
+	if err != nil {
+		panic(err)
+	}
+
+	err = gwServer.ListenAndServe()
+	if err != nil {
+		return
+	}
+}
+
+func registerGrpc(wg *sync.WaitGroup) {
+	defer wg.Done()
 	// server 创建四部曲
 	// 1. 选择监听的端口和协议
 	// 2. 创建一个 grpc server
@@ -109,4 +139,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
+}
+
+func main() {
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+	go registerGateWay(&wg)
+	go registerGrpc(&wg)
+	wg.Wait()
 }

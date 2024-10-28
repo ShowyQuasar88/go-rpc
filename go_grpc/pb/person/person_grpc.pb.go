@@ -19,10 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	SearchService_Search_FullMethodName    = "/person.SearchService/Search"
-	SearchService_SearchIn_FullMethodName  = "/person.SearchService/SearchIn"
-	SearchService_SearchOut_FullMethodName = "/person.SearchService/SearchOut"
-	SearchService_SearchIO_FullMethodName  = "/person.SearchService/SearchIO"
+	SearchService_Search_FullMethodName = "/person.SearchService/Search"
 )
 
 // SearchServiceClient is the client API for SearchService service.
@@ -30,9 +27,6 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SearchServiceClient interface {
 	Search(ctx context.Context, in *PersonReq, opts ...grpc.CallOption) (*PersonResp, error)
-	SearchIn(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[PersonReq, PersonResp], error)
-	SearchOut(ctx context.Context, in *PersonReq, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PersonResp], error)
-	SearchIO(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[PersonReq, PersonResp], error)
 }
 
 type searchServiceClient struct {
@@ -53,59 +47,11 @@ func (c *searchServiceClient) Search(ctx context.Context, in *PersonReq, opts ..
 	return out, nil
 }
 
-func (c *searchServiceClient) SearchIn(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[PersonReq, PersonResp], error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &SearchService_ServiceDesc.Streams[0], SearchService_SearchIn_FullMethodName, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &grpc.GenericClientStream[PersonReq, PersonResp]{ClientStream: stream}
-	return x, nil
-}
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type SearchService_SearchInClient = grpc.ClientStreamingClient[PersonReq, PersonResp]
-
-func (c *searchServiceClient) SearchOut(ctx context.Context, in *PersonReq, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PersonResp], error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &SearchService_ServiceDesc.Streams[1], SearchService_SearchOut_FullMethodName, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &grpc.GenericClientStream[PersonReq, PersonResp]{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type SearchService_SearchOutClient = grpc.ServerStreamingClient[PersonResp]
-
-func (c *searchServiceClient) SearchIO(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[PersonReq, PersonResp], error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &SearchService_ServiceDesc.Streams[2], SearchService_SearchIO_FullMethodName, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &grpc.GenericClientStream[PersonReq, PersonResp]{ClientStream: stream}
-	return x, nil
-}
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type SearchService_SearchIOClient = grpc.BidiStreamingClient[PersonReq, PersonResp]
-
 // SearchServiceServer is the server API for SearchService service.
 // All implementations must embed UnimplementedSearchServiceServer
 // for forward compatibility.
 type SearchServiceServer interface {
 	Search(context.Context, *PersonReq) (*PersonResp, error)
-	SearchIn(grpc.ClientStreamingServer[PersonReq, PersonResp]) error
-	SearchOut(*PersonReq, grpc.ServerStreamingServer[PersonResp]) error
-	SearchIO(grpc.BidiStreamingServer[PersonReq, PersonResp]) error
 	mustEmbedUnimplementedSearchServiceServer()
 }
 
@@ -117,17 +63,7 @@ type SearchServiceServer interface {
 type UnimplementedSearchServiceServer struct{}
 
 func (UnimplementedSearchServiceServer) Search(context.Context, *PersonReq) (*PersonResp, error) {
-
 	return nil, status.Errorf(codes.Unimplemented, "method Search not implemented")
-}
-func (UnimplementedSearchServiceServer) SearchIn(grpc.ClientStreamingServer[PersonReq, PersonResp]) error {
-	return status.Errorf(codes.Unimplemented, "method SearchIn not implemented")
-}
-func (UnimplementedSearchServiceServer) SearchOut(*PersonReq, grpc.ServerStreamingServer[PersonResp]) error {
-	return status.Errorf(codes.Unimplemented, "method SearchOut not implemented")
-}
-func (UnimplementedSearchServiceServer) SearchIO(grpc.BidiStreamingServer[PersonReq, PersonResp]) error {
-	return status.Errorf(codes.Unimplemented, "method SearchIO not implemented")
 }
 func (UnimplementedSearchServiceServer) mustEmbedUnimplementedSearchServiceServer() {}
 func (UnimplementedSearchServiceServer) testEmbeddedByValue()                       {}
@@ -168,31 +104,6 @@ func _SearchService_Search_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-func _SearchService_SearchIn_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(SearchServiceServer).SearchIn(&grpc.GenericServerStream[PersonReq, PersonResp]{ServerStream: stream})
-}
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type SearchService_SearchInServer = grpc.ClientStreamingServer[PersonReq, PersonResp]
-
-func _SearchService_SearchOut_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(PersonReq)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(SearchServiceServer).SearchOut(m, &grpc.GenericServerStream[PersonReq, PersonResp]{ServerStream: stream})
-}
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type SearchService_SearchOutServer = grpc.ServerStreamingServer[PersonResp]
-
-func _SearchService_SearchIO_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(SearchServiceServer).SearchIO(&grpc.GenericServerStream[PersonReq, PersonResp]{ServerStream: stream})
-}
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type SearchService_SearchIOServer = grpc.BidiStreamingServer[PersonReq, PersonResp]
-
 // SearchService_ServiceDesc is the grpc.ServiceDesc for SearchService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -205,23 +116,6 @@ var SearchService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _SearchService_Search_Handler,
 		},
 	},
-	Streams: []grpc.StreamDesc{
-		{
-			StreamName:    "SearchIn",
-			Handler:       _SearchService_SearchIn_Handler,
-			ClientStreams: true,
-		},
-		{
-			StreamName:    "SearchOut",
-			Handler:       _SearchService_SearchOut_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "SearchIO",
-			Handler:       _SearchService_SearchIO_Handler,
-			ServerStreams: true,
-			ClientStreams: true,
-		},
-	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "person/person.proto",
 }
